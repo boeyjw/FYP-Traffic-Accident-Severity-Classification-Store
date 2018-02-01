@@ -10,7 +10,7 @@ from sklearn.metrics import confusion_matrix, accuracy_score, precision_recall_f
 RANDOM_STATE = 500
 
 # Init
-tap = pd.read_csv('acc2005_2016-v2018.2.1.csv').merge(pd.read_csv('veh2005_2016-v2018.2.1.csv'), on='Accident_Index').drop(['Accident_Index', 'Date_Time'], axis=1)
+tap = pd.read_csv('acc2005_2016-v2018.2.3.csv').merge(pd.read_csv('veh2005_2016-v2018.2.3.csv'), on='Accident_Index').drop(['Accident_Index', 'Date_Time'], axis=1)
 fs1 = joblib.load('lda-rfe-fs1.pkl')
 rf_clf = RandomForestClassifier(n_estimators=30, n_jobs=6, random_state=RANDOM_STATE, verbose=1)
 
@@ -30,4 +30,4 @@ for label, fs in fs1.items():
     }
 
 joblib.dump(y_score, 'lda-rfe-fs1-res.pkl')
-
+joblib.dump(X.columns, 'lda-rfe-tap_col.pkl')

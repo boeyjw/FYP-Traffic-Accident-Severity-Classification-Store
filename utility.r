@@ -6,6 +6,7 @@ cl <- makeCluster(cores_2_use)
 # Impute function
 fun_imp <- function(cl, data, X = 1:detectCores() - 2, m = 1, imp_meth, pred_mat, maxit = 5) {
     imp_data <- data[[1]][c(),]
+    imp_merge <<- vector(mode = 'list', length = length(data))
 
     print('Start Imputation')
     for (n in 1:length(data)) {
@@ -13,11 +14,11 @@ fun_imp <- function(cl, data, X = 1:detectCores() - 2, m = 1, imp_meth, pred_mat
             mice(d, m = m, printFlag = FALSE, method = method, maxit = maxit, predictorMatrix = predictionMatrix)
         }, data[[n]], m, imp_meth, pred_mat, maxit)
 
-        imp_merge <<- imp_pairs[[1]]
+        imp_merge[[n]] <<- imp_pairs[[1]]
         for (p in 2:length(imp_pairs)) {
-            imp_merge <<- ibind(imp_merge, imp_pairs[[p]])
+            imp_merge[[n]] <<- ibind(imp_merge[[n]], imp_pairs[[p]])
         }
-        imp_data <- rbind(imp_data, complete(imp_merge))
+        imp_data <- rbind(imp_data, complete(imp_merge[[n]]))
 
         print(n)
     }
