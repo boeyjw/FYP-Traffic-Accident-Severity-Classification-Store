@@ -5,6 +5,7 @@ from collections import namedtuple
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+from sklearn.externals import joblib
 from keras.utils import to_categorical
 class tap:
     __data = pd.DataFrame()
@@ -24,10 +25,14 @@ class tap:
         self.x_cols = self.__data.columns.drop('Accident_Severity')
         self.rec_len = len(self.__data)
 
-    def load_tap(self, binarizer_mode = 'sklearn'):
+    def load_tap(self, binarizer_mode = None):
         data = namedtuple('data', ['x', 'y'])
-        return data(self.__data.drop('Accident_Severity', axis=1),
-        LabelBinarizer().fit_transform(self.__data['Accident_Severity']) if binarizer_mode == 'sklearn' else to_categorical(self.__data['Accident_Severity']))
+        target = self.__data['Accident_Severity']
+        if binarizer_mode == 'sklearn':
+            target = LabelBinarizer().fit_transform(target)
+        elif binarizer_mode == 'keras':
+            target = to_categorical(target)
+        return data(self.__data.drop('Accident_Severity', axis=1), target)
 
     def model_general_parameters(self, data_len, random_state = 500, batch_size = 0.1, n_jobs = 6, learning_rate = 0.01, epochs = 150, test_size = 0.3, validation_split = 0.1, **kwargs):
         params = {
@@ -51,4 +56,8 @@ class tap:
             'report': classification_report(y_true, y_pred)
         }
         return score
+
+    def joblib_dumper(self, **kwargs):
+        for f, o in kwargs.items():
+            joblib.dump(o, str(f) + '.pkl')
 
