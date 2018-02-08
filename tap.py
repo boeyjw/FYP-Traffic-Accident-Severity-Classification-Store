@@ -15,13 +15,13 @@ class tap:
     """
     Parent class for any classifier using the TAP dataset
     """
-    def __init__(self):
+    def __init__(self, x_cols, rec_len):
         self.binarizer = {
             'mode': None,
             'obj': None
         }
-        self.x_cols = None
-        self.rec_len = None
+        self.x_cols = x_cols
+        self.rec_len = rec_len
     
     """
     Iteratively does a sklearn joblib dump for any sklearn output
@@ -42,8 +42,7 @@ class modelling(tap):
         # Import CSV data
         self.__data = pd.read_csv(directory + 'acc2005_2016-v2018.' + ver_file + '.imp.csv').merge(pd.read_csv(directory + 'veh2005_2016-v2018.' + ver_file + '.imp.csv'), on = 'Accident_Index', how = 'inner').drop(['Accident_Index', 'Date_Time'], axis = 1)
         # Initialise general pointers on the dataset
-        self.x_cols = self.__data.columns.drop('Accident_Severity')
-        self.rec_len = len(self.__data)
+        tap.__init__(x_cols=self.__data.columns.drop('Accident_Severity'), rec_len=len(self.__data))
 
     """
     Loads TAP dataset with selected target vector option
