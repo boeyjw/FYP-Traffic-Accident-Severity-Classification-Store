@@ -2,19 +2,39 @@ import pandas as pd
 import numpy as np
 
 from collections import namedtuple
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+# Data & model manager
 from sklearn.externals import joblib
+from sklearn.preprocessing import LabelBinarizer
 from keras.utils import to_categorical
+
+# Metrics
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix    
+from scipy.stats import ttest_rel
+
 class tap:
-    __data = pd.DataFrame()
-    x_cols = None
-    rec_len = None
     """
-    Traffic Accident Prediction data and hyperparameter manager
+    Parent class for any classifier using the TAP dataset
     """
-    def __init__(self, ver_dir, ver_file = None, use_current_dir = False):
+    def __init__(self):
+        self.binarizer = {
+            'mode': None,
+            'obj': None
+        }
+        self.x_cols = None
+        self.rec_len = None
+    
+    """
+    Iteratively does a sklearn joblib dump for any sklearn output
+    """
+    def joblib_dumper(self, **kwargs):
+        for f, o in kwargs.items():
+            joblib.dump(o, str(f) + '.pkl')
+
+class modelling(tap):
+    """
+    Traffic Accident Prediction data and model hyperparameter manager
+    """
+    def __init__(self, ver_dir, ver_file=None, use_current_dir=False):
         # Get the directory right
         if ver_file is None:
             ver_file = ver_dir
@@ -25,16 +45,25 @@ class tap:
         self.x_cols = self.__data.columns.drop('Accident_Severity')
         self.rec_len = len(self.__data)
 
-    def load_tap(self, binarizer_mode = None):
+    """
+    Loads TAP dataset with selected target vector option
+    """
+    def load_tap(self, binarizer_mode=None):
         data = namedtuple('data', ['x', 'y'])
         target = self.__data['Accident_Severity']
+        self.binarizer['name'] = binarizer_mode
+
         if binarizer_mode == 'sklearn':
-            target = LabelBinarizer().fit_transform(target)
+            self.binarizer['obj'] = LabelBinarizer().fit(target)
+            target = self.binarizer['obj'].transform(target)
         elif binarizer_mode == 'keras':
             target = to_categorical(target)
+
         return data(self.__data.drop('Accident_Severity', axis=1), target)
 
-    def model_general_parameters(self, data_len, random_state = 500, batch_size = 0.1, n_jobs = 6, learning_rate = 0.01, epochs = 150, test_size = 0.3, validation_split = 0.1, **kwargs):
+    """Dict to store all model hyperparameters
+    """
+    def model_general_parameters(self, data_len, random_state=500, batch_size=0.1, n_jobs=6, learning_rate=0.01, epochs=150, test_size=0.3, validation_split=0.1, **kwargs):
         params = {
             'random_state': random_state,
             'batch_size': int(np.ceil(data_len * (1 - test_size) * batch_size)) if isinstance(batch_size, float) else batch_size,
@@ -49,15 +78,55 @@ class tap:
 
         return params
 
-    def evaluate_model(self, y_true, y_pred, mode = 'weighted'):
+class modelmetrics(tap): 
+    """Utility class that provides metrics for model evaluation and comparison
+    """  
+    def __init__(self, y_true = None, y_pred = None):
+        if self.binarizer is not None:
+            if y_true is not None:
+                self.y_true = self.__reverse_binarizer(y_true)
+            if y_pred is not None:
+                self.y_pred = self.__reverse_binarizer(y_pred)
+
+    """sklearn does not support vector target (multiclass), reverses the transformation to integer
+    """
+    def __reverse_binarizer(self, arr):
+        return np.argmax(arr, axis = 1) if self.binarizer == 'keras' else self.binarizer['obj'].reverse_transform(arr)
+
+    """Evaluates model accuracy, precision, recall, f1 and confusion matrix
+    """
+    def evaluate_model(self, y_true = None, y_pred = None, mode='weighted', name=None, do_print=False):
+        if y_true is None:
+            y_true = self.y_true
+        if y_pred is None:
+            y_pred = self.y_pred
+
         score = {
+            'name': name,
             'acc': accuracy_score(y_true, y_pred),
             'cm': confusion_matrix(y_true, y_pred),
             'report': classification_report(y_true, y_pred)
         }
+
+        if do_print == True:
+            if score['name'] is not None:
+                print(score['name'])
+            print('Accuracy: {}'.format(score['acc']))
+            print('Confusion Matrix:\n{}'.format(score['cm']))
+            print(score['report'])
+
         return score
 
-    def joblib_dumper(self, **kwargs):
-        for f, o in kwargs.items():
-            joblib.dump(o, str(f) + '.pkl')
+    """Student T-test to compare the significance between models
+    """
+    def ttest2(self, y_pred_1, y_pred_2, do_print=False, name=None):
+        ttest = {'ttest': ttest_rel(y_pred_1, y_pred_2)}
+        if name is not None:
+            ttest['name'] = name
+            if do_print == True:
+                print(ttest['name'])
+        if do_print == True:
+            print('Statistics: {}\np-value: {}'.format(ttest['ttest'][0], ttest['ttest'][1]))
+            
+        return ttest
 
