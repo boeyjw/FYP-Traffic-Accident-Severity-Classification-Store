@@ -25,7 +25,7 @@ params = t.model_general_parameters(data_len = len(data.x), optimizer = 'sgd', l
                 TerminateOnNaN(),
                 EarlyStopping(patience=10)
                 # CSVLogger('nn-hist-v1.csv')
-            ], class_weight = {
+            ], epochs=30, class_weight = {
                 1: class_weight[0],
                 2: class_weight[1],
                 3: class_weight[2]
