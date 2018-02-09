@@ -8,7 +8,7 @@ from sklearn.preprocessing import LabelBinarizer
 from keras.utils import to_categorical
 
 # Metrics
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix    
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from scipy.stats import ttest_rel
 
 class tap:
@@ -22,7 +22,7 @@ class tap:
         }
         self.x_cols = x_cols
         self.rec_len = rec_len
-    
+
     """
     Iteratively does a sklearn joblib dump for any sklearn output
     """
@@ -42,7 +42,7 @@ class modelling(tap):
         # Import CSV data
         self.__data = pd.read_csv(directory + 'acc2005_2016-v2018.' + ver_file + '.imp.csv').merge(pd.read_csv(directory + 'veh2005_2016-v2018.' + ver_file + '.imp.csv'), on = 'Accident_Index', how = 'inner').drop(['Accident_Index', 'Date_Time'], axis = 1)
         # Initialise general pointers on the dataset
-        tap.__init__(x_cols=self.__data.columns.drop('Accident_Severity'), rec_len=len(self.__data))
+        super().__init__(x_cols=self.__data.columns.drop('Accident_Severity'), rec_len=len(self.__data))
 
     """
     Loads TAP dataset with selected target vector option
@@ -77,10 +77,11 @@ class modelling(tap):
 
         return params
 
-class modelmetrics(tap): 
+class modelmetrics(tap):
     """Utility class that provides metrics for model evaluation and comparison
-    """  
-    def __init__(self, y_true = None, y_pred = None):
+    """
+    def __init__(self, binarizer, y_true=None, y_pred=None):
+        self.binarizer = binarizer
         if self.binarizer is not None:
             if y_true is not None:
                 self.y_true = self.__reverse_binarizer(y_true)
@@ -126,6 +127,6 @@ class modelmetrics(tap):
                 print(ttest['name'])
         if do_print == True:
             print('Statistics: {}\np-value: {}'.format(ttest['ttest'][0], ttest['ttest'][1]))
-            
+
         return ttest
 
