@@ -8,7 +8,7 @@ from sklearn.preprocessing import LabelBinarizer
 from keras.utils import to_categorical
 
 # Metrics
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix    
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from scipy.stats import ttest_rel
 
 class tap:
@@ -22,7 +22,7 @@ class tap:
         }
         self.x_cols = x_cols
         self.rec_len = rec_len
-    
+
     """
     Iteratively does a sklearn joblib dump for any sklearn output
     """
@@ -77,10 +77,11 @@ class modelling(tap):
 
         return params
 
-class modelmetrics(tap): 
+class modelmetrics(tap):
     """Utility class that provides metrics for model evaluation and comparison
-    """  
-    def __init__(self, y_true = None, y_pred = None):
+    """
+    def __init__(self, binarizer, y_true=None, y_pred=None):
+        self.binarizer = binarizer
         if self.binarizer is not None:
             if y_true is not None:
                 self.y_true = self.__reverse_binarizer(y_true)
@@ -126,6 +127,6 @@ class modelmetrics(tap):
                 print(ttest['name'])
         if do_print == True:
             print('Statistics: {}\np-value: {}'.format(ttest['ttest'][0], ttest['ttest'][1]))
-            
+
         return ttest
 
