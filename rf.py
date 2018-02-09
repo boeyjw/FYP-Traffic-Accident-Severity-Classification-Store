@@ -1,13 +1,13 @@
 import numpy as np
+import tap as tp
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.feature_selection import chi2
-from tap import tap, modelmetrics
 
 print('init')
-tap = tap('2.3')
+tap = tp.modelling('2.3')
 
 data = tap.load_tap()
 class_weight = compute_class_weight('balanced', np.unique(data.y), data.y)
@@ -43,7 +43,7 @@ rf.fit(X_train, Y_train)
 y_pred_alt_chi = rf.predict(X_test)
 del rf
 
-metrics = modelmetrics()
+metrics = tp.modelmetrics()
 print('evaluate')
 y_score = metrics.evaluate_model(Y_test, y_pred, name = 'Random Forest with Class Weight on 20 features', do_print=True)
 y_score_alt = metrics.evaluate_model(Y_test, y_pred_alt, name = 'Random Forest without Class Weight on 20 features', do_print=True)

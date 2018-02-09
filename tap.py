@@ -15,7 +15,7 @@ class tap:
     """
     Parent class for any classifier using the TAP dataset
     """
-    def __init__(self, x_cols, rec_len):
+    def __init__(self, x_cols=None, rec_len=None):
         self.binarizer = {
             'mode': None,
             'obj': None
@@ -42,7 +42,7 @@ class modelling(tap):
         # Import CSV data
         self.__data = pd.read_csv(directory + 'acc2005_2016-v2018.' + ver_file + '.imp.csv').merge(pd.read_csv(directory + 'veh2005_2016-v2018.' + ver_file + '.imp.csv'), on = 'Accident_Index', how = 'inner').drop(['Accident_Index', 'Date_Time'], axis = 1)
         # Initialise general pointers on the dataset
-        tap.__init__(x_cols=self.__data.columns.drop('Accident_Severity'), rec_len=len(self.__data))
+        super().__init__(x_cols=self.__data.columns.drop('Accident_Severity'), rec_len=len(self.__data))
 
     """
     Loads TAP dataset with selected target vector option

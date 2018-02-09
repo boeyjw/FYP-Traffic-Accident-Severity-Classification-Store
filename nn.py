@@ -5,8 +5,8 @@ where all it predicts is class 3 (majority class)
 """
 import pandas as pd
 import numpy as np
+import tap
 
-from tap import tap, modelmetrics
 from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib
 from sklearn.utils.class_weight import compute_class_weight
@@ -17,11 +17,11 @@ from keras import initializers
 from keras.callbacks import TerminateOnNaN, EarlyStopping, CSVLogger
 
 print('Init')
-tap = tap(ver_dir = '2.3')
-data = tap.load_tap(binarizer_mode = 'keras')
+t = tap.modelling(ver_dir = '2.3')
+data = t.load_tap(binarizer_mode = 'keras')
 target = np.argmax(data.y, axis = 1)
 class_weight = compute_class_weight('balanced', np.unique(target), target)
-params = tap.model_general_parameters(data_len = len(data.x), optimizer = 'sgd', loss = 'categorical_crossentropy', metrics = ['categorical_accuracy'], callbacks = [
+params = t.model_general_parameters(data_len = len(data.x), optimizer = 'sgd', loss = 'categorical_crossentropy', metrics = ['categorical_accuracy'], callbacks = [
                 TerminateOnNaN(),
                 EarlyStopping(patience=10)
                 # CSVLogger('nn-hist-v1.csv')
@@ -35,8 +35,8 @@ X_train, X_test, Y_train, Y_test = train_test_split(data.x, data.y, test_size = 
 
 print('Fit')
 model = Sequential()
-model.add(Dense(len(tap.x_cols) * 2, input_dim = len(tap.x_cols), activation='relu', bias_initializer=initializers.glorot_uniform(), activity_regularizer=regularizers.l2()))
-model.add(Dense(len(tap.x_cols), activation='relu', activity_regularizer=regularizers.l2(), bias_initializer=initializers.glorot_uniform()))
+model.add(Dense(len(t.x_cols) * 2, input_dim = len(t.x_cols), activation='relu', bias_initializer=initializers.glorot_uniform(), activity_regularizer=regularizers.l2()))
+model.add(Dense(len(t.x_cols), activation='relu', activity_regularizer=regularizers.l2(), bias_initializer=initializers.glorot_uniform()))
 model.add(Dense(4, activation='softmax'))
 model.compile(optimizer = params['optimizer'], loss = params['loss'], metrics = params['metrics'])
 
@@ -46,5 +46,5 @@ hist = model.fit(X_train, Y_train, batch_size = params['batch_size'], epochs = p
 print('Predict')
 y_pred = model.predict(X_test, batch_size=params['batch_size'])
 
-metrics = modelmetrics()
+metrics = tap.modelmetrics(binarizer=t.binarizer)
 score = metrics.evaluate_model(np.argmax(Y_test, axis = 1), np.argmax(y_pred, axis=1), do_print=True)
