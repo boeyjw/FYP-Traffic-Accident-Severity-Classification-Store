@@ -20,6 +20,7 @@ fun_imp <- function(cl, data, X = 1:detectCores() - 2, m = 1, imp_meth, pred_mat
         }
         imp_data <- rbind(imp_data, complete(imp_merge[[n]]))
 
+        gc()
         print(n)
     }
 
@@ -38,7 +39,7 @@ fun_splt_veh <- function(data, tar) {
 }
 #########################################
 # Wrapper function to write data to csv file
-fun_imp_wrapper <- function(cl, data, file_name, cluster_export_varname, seed = 500, exclude = data.frame(), tar = NA, m = 1, cores_2_use = detectCores() - 2, imp_meth, pred_mat, maxit = 5) {
+fun_imp_wrapper <- function(cl, data, file_name, cluster_export_varname, seed = 500, exclude = data.frame(), m = 1, cores_2_use = detectCores() - 2, imp_meth, pred_mat, maxit = 5, rdsexp = NA) {
     if(nrow(exclude) > 0 && (nrow(exclude) != sum(sapply(data, nrow)))) {
         print('Unbindable data & exclusion rows')
         stopCluster(cl)
@@ -51,13 +52,15 @@ fun_imp_wrapper <- function(cl, data, file_name, cluster_export_varname, seed = 
     clusterExport(cl, cluster_export_varname)
     clusterEvalQ(cl, library(mice))
 
-    imp_data <- fun_imp(cl = cl, data = data, tar = tar, X = 1:cores_2_use, m = m, imp_meth = imp_meth, pred_mat = pred_mat, maxit = maxit)
+    imp_data <- fun_imp(cl = cl, data = data, X = 1:cores_2_use, m = m, imp_meth = imp_meth, pred_mat = pred_mat, maxit = maxit)
+    stopCluster(cl)
 
     if(nrow(exclude) > 0)
         imp_data_full <- bind_cols(imp_data, exclude)
 
     write.csv(x = imp_data_full, file = paste0(file_name, '.imp.csv'), row.names = FALSE)
+    if(!is.na(rdsexp))
+        saveRDS(imp_merge, paste0(rdsexp, '.RData'))
 
-    stopCluster(cl)
 }
 ########################################
