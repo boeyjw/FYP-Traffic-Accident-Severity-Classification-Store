@@ -80,7 +80,7 @@ class modelling(tap):
 class modelmetrics(tap):
     """Utility class that provides metrics for model evaluation and comparison
     """
-    def __init__(self, binarizer, y_true=None, y_pred=None):
+    def __init__(self, binarizer=None, y_true=None, y_pred=None):
         self.binarizer = binarizer
         if self.binarizer is not None:
             if y_true is not None:
@@ -95,7 +95,7 @@ class modelmetrics(tap):
 
     """Evaluates model accuracy, precision, recall, f1 and confusion matrix
     """
-    def evaluate_model(self, y_true = None, y_pred = None, mode='weighted', name=None, do_print=False):
+    def evaluate_model(self, y_true=None, y_pred=None, mode='weighted', name=None, do_print=False):
         if y_true is None:
             y_true = self.y_true
         if y_pred is None:
