@@ -11,8 +11,6 @@ from sklearn.externals import joblib
 
 model = modelling('2.5')
 data = model.load_tap()
-data.x = data.x.loc[1:10000]
-data.y = data.y.loc[1:10000]
 params = model.model_general_parameters(n_jobs=6, data_len=len(data.y))
 
 metrics = modelmetrics()
@@ -37,21 +35,22 @@ tomek = TomekLinks(n_jobs=params['n_jobs'], random_state=params['random_state'])
 x_res, y_res = tomek.fit_sample(data.x, data.y)
 res['tomek'] = rf_check_perf(x_res, y_res)
 joblib_dump(x_res, y_res, 'tomek')
-del x_res, y_res, tomek
+del x_res, y_res
 
 print('SMOTE')
 smote = SMOTE(n_jobs=params['n_jobs'], random_state=params['random_state'], kind='borderline1')
 x_res, y_res = smote.fit_sample(data.x, data.y)
 res['smote'] = rf_check_perf(x_res, y_res)
 joblib_dump(x_res, y_res, 'smote')
-del x_res, y_res, smote
+del x_res, y_res
+joblib.dump(res, 'tmp/' + 'sampling_results.pkl')
 
 print('SMOTETomek')
-smote_tomek = SMOTETomek(random_state=params['random_state'], smote=smote, tomek=tomek, n_jobs=params['n_jobs'])
+smote_tomek = SMOTETomek(random_state=params['random_state'], smote=smote, tomek=tomek)
 x_res, y_res = smote_tomek.fit_sample(data.x, data.y)
 res['smotetomek'] = rf_check_perf(x_res, y_res)
 joblib_dump(x_res, y_res, 'smotetomek')
-del x_res, y_res, smote_tomek
+del x_res, y_res
 
 joblib.dump(res, 'tmp/' + 'sampling_results.pkl')
 
