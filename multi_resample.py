@@ -50,11 +50,11 @@ if __name__ == "__main__":
 
     lock = multiprocessing.Lock()
     procs = [
-        multiprocessing.Process(target=resample, name=name, args=(data.x[1:100000], data.y[1:100000], params, res, lock, sampler, name))
+        multiprocessing.Process(target=resample, name=name, args=(data.x, data.y, params, res, lock, sampler, name))
         for name, sampler in samplers.items()
     ]
 
-    res['default'] = random_forest_test(data.x[1:100000], data.y[1:100000], params, name='benchmark')
+    res['default'] = random_forest_test(data.x, data.y, params, name='benchmark')
     for p in procs:
         p.start()
     for p in procs:
