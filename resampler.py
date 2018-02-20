@@ -43,19 +43,13 @@ samplers = {
 
 samplers['smotetomek'] = SMOTETomek(random_state=params['random_state'], smote=samplers['smote'], tomek=samplers['tomek'])
 
-if __name__ == "__main__":
-    print('No sampling')
-    res['default'] = rf_check_perf(data.x[1:100000], data.y[1:100000])
+print('No sampling')
+res['default'] = rf_check_perf(data.x[1:100000], data.y[1:100000])
 
-    lock = Lock()
-    procs = [
-        Process(target=resample, name=name, args=(sampler, name, data.x[1:100000], data.y[1:100000], res, lock)) 
-        for name, sampler in samplers.items()
-            ]
-    for p in procs:
-        p.start()
-    for p in procs:
-        p.join()
+lock = Lock()
+pool = Pool(len(samplers))
+for name, sampler in samplers:
+    pool.apply_async(resample, args=(sampler, name, data.x[1:100000], data.y[1:100000], res, lock))
 
 joblib.dump(res, 'tmp/' + 'sampling_results_tst.pkl')
 
