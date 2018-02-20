@@ -34,13 +34,14 @@ class modelling(tap):
     """
     Traffic Accident Prediction data and model hyperparameter manager
     """
-    def __init__(self, ver_dir, ver_file=None, use_current_dir=False):
+    def __init__(self, ver_dir, ver_file=None, use_current_dir=False, max_year=2015):
         # Get the directory right
         if ver_file is None:
             ver_file = ver_dir
         directory = './' if use_current_dir == True else 'Imputation/' + ver_dir + '/'
         # Import CSV data
-        self.__data = pd.read_csv(directory + 'acc2005_2016-v2018.' + ver_file + '.imp.csv').merge(pd.read_csv(directory + 'veh2005_2016-v2018.' + ver_file + '.imp.csv'), on = 'Accident_Index', how = 'inner').drop(['Accident_Index', 'Date_Time'], axis = 1)
+        self.__data = pd.read_csv(directory + 'acc2005_' + str(max_year) + '-v2018.' + ver_file + '.imp.csv').merge(
+            pd.read_csv(directory + 'veh2005_' + str(max_year) + '-v2018.' + ver_file + '.imp.csv'), on = 'Accident_Index', how = 'inner').drop(['Accident_Index', 'Date_Time'], axis = 1)
         # Initialise general pointers on the dataset
         super().__init__(x_cols=self.__data.columns.drop('Accident_Severity'), rec_len=len(self.__data))
 
@@ -62,10 +63,10 @@ class modelling(tap):
 
     """Dict to store all model hyperparameters
     """
-    def model_general_parameters(self, data_len, random_state=500, batch_size=0.1, n_jobs=6, learning_rate=0.01, epochs=150, test_size=0.3, validation_split=0.1, **kwargs):
+    def model_general_parameters(self, random_state=500, batch_size=0.1, n_jobs=6, learning_rate=0.01, epochs=150, test_size=0.3, validation_split=0.1, **kwargs):
         params = {
             'random_state': random_state,
-            'batch_size': int(np.ceil(data_len * (1 - test_size) * batch_size)) if isinstance(batch_size, float) else batch_size,
+            'batch_size': int(np.ceil(self.rec_len * (1 - test_size) * batch_size)) if isinstance(batch_size, float) else batch_size,
             'n_jobs': n_jobs,
             'learning_rate': learning_rate,
             'epochs': epochs,
@@ -82,6 +83,8 @@ class modelmetrics(tap):
     """
     def __init__(self, binarizer=None, y_true=None, y_pred=None):
         self.binarizer = binarizer
+        self.y_true = y_true
+        self.y_pred = y_pred
         if self.binarizer is not None:
             if y_true is not None:
                 self.y_true = self.__reverse_binarizer(y_true)
