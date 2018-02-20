@@ -18,8 +18,8 @@ def rf_check_perf(x, y, name=None):
     return metrics.evaluate_model(y_pred=y_pred, y_true=y_test, name=name, do_print=True)
 
 def joblib_dump(x, y, postfix):
-    joblib.dump(x, 'tmp/' + 'X_' + postfix + '.pkl')
-    joblib.dump(y, 'tmp/' + 'Y_' + postfix + '.pkl')
+    joblib.dump(x, 'tmp/' + 'X_' + postfix + '_tst.pkl')
+    joblib.dump(y, 'tmp/' + 'Y_' + postfix + '_tst.pkl')
 
 def resample(sampler, name, datax, datay, res, lock):
     print(name)
@@ -43,18 +43,19 @@ samplers = {
 
 samplers['smotetomek'] = SMOTETomek(random_state=params['random_state'], smote=samplers['smote'], tomek=samplers['tomek'])
 
-print('No sampling')
-res['default'] = rf_check_perf(data.x, data.y)
+if __name__ == "__main__":
+    print('No sampling')
+    res['default'] = rf_check_perf(data.x[1:100000], data.y[1:100000])
 
-lock = Lock()
-procs = [
-    Process(target=resample, name=name, args=(sampler, name, data.x, data.y, res, lock)) 
-    for name, sampler in samplers.items()
-        ]
-for p in procs:
-    p.start()
-for p in procs:
-    p.join()
+    lock = Lock()
+    procs = [
+        Process(target=resample, name=name, args=(sampler, name, data.x[1:100000], data.y[1:100000], res, lock)) 
+        for name, sampler in samplers.items()
+            ]
+    for p in procs:
+        p.start()
+    for p in procs:
+        p.join()
 
-joblib.dump(res, 'tmp/' + 'sampling_results.pkl')
+joblib.dump(res, 'tmp/' + 'sampling_results_tst.pkl')
 
