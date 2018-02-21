@@ -34,13 +34,13 @@ class modelling(tap):
     """
     Traffic Accident Prediction data and model hyperparameter manager
     """
-    def __init__(self, ver_dir, ver_file=None, use_current_dir=False):
+    def __init__(self, ver_dir, ver_file=None, use_current_dir=False, max_year = '2015'):
         # Get the directory right
         if ver_file is None:
             ver_file = ver_dir
         directory = './' if use_current_dir == True else 'Imputation/' + ver_dir + '/'
         # Import CSV data
-        self.__data = pd.read_csv(directory + 'acc2005_2016-v2018.' + ver_file + '.imp.csv').merge(pd.read_csv(directory + 'veh2005_2016-v2018.' + ver_file + '.imp.csv'), on = 'Accident_Index', how = 'inner').drop(['Accident_Index', 'Date_Time'], axis = 1)
+        self.__data = pd.read_csv(directory + 'acc2005_'+ max_year +'-v2018.' + ver_file + '.imp.csv').merge(pd.read_csv(directory + 'veh2005_'+ max_year +'-v2018.' + ver_file + '.imp.csv'), on = 'Accident_Index', how = 'inner').drop(['Accident_Index', 'Date_Time'], axis = 1)
         # Initialise general pointers on the dataset
         super().__init__(x_cols=self.__data.columns.drop('Accident_Severity'), rec_len=len(self.__data))
 
