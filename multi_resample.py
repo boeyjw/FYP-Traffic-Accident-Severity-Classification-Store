@@ -10,8 +10,8 @@ from sklearn.externals import joblib
 
 from tap import modelling, modelmetrics
 
-def random_forest_test(x, y, params, name=None):
-    X_train, X_test, Y_train, Y_test = train_test_split(x, y, test_size=params['test_size'], random_state=params['random_state'])
+def random_forest_test(x, y, params, name=None, drop_datetime=True):
+    X_train, X_test, Y_train, Y_test = train_test_split(x.drop(['Year', 'Month', 'Hour', 'Day_of_Week'], axis=1) if drop_datetime else x, y, test_size=params['test_size'], random_state=params['random_state'])
     rf = RandomForestClassifier(n_estimators=30, n_jobs=params['n_jobs'], random_state=params['random_state'])
     rf.fit(X_train, Y_train)
     return modelmetrics(y_true=Y_test, y_pred=rf.predict(X_test)).evaluate_model(name=name, do_print=True)
@@ -35,6 +35,7 @@ def resample(x, y, params, res, lock, sampler, name):
     print('Exiting: ' + multiprocessing.current_process().name)
 
 if __name__ == "__main__":
+    # TODO: Convert resulatant sampling datasets into pandas dataframe (with column names) then dump it as csv
     model = modelling('2.5')
     data = model.load_tap()
     params = model.model_general_parameters()

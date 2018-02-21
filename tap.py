@@ -8,7 +8,8 @@ from sklearn.preprocessing import LabelBinarizer
 from keras.utils import to_categorical
 
 # Metrics
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+from sklearn.metrics import accuracy_score, confusion_matrix
+from imblearn.metrics import classification_report_imbalanced, sensitivity_specificity_support
 from scipy.stats import ttest_rel
 
 class tap:
@@ -104,11 +105,15 @@ class modelmetrics(tap):
         if y_pred is None:
             y_pred = self.y_pred
 
+        sss = sensitivity_specificity_support(y_true, y_pred, average=mode)
         score = {
             'name': name,
-            'acc': accuracy_score(y_true, y_pred),
-            'cm': confusion_matrix(y_true, y_pred),
-            'report': classification_report(y_true, y_pred)
+            'accuracy': accuracy_score(y_true, y_pred),
+            'confusion_matrix': confusion_matrix(y_true, y_pred),
+            'report': classification_report_imbalanced(y_true, y_pred),
+            'sensitivity': sss[0],
+            'specificity': sss[1],
+            'support': sss[2]
         }
 
         if do_print == True:
@@ -119,6 +124,12 @@ class modelmetrics(tap):
             print(score['report'])
 
         return score
+    
+    @staticmethod
+    def parse_evaluate_model_print(self, eval_res):
+        for k, v in eval_res.items():
+            if v is not None:
+                print(k + ': ' + v, sep='')
 
     """Student T-test to compare the significance between models
     """
