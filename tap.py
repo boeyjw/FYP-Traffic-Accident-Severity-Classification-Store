@@ -35,7 +35,7 @@ class modelling(tap):
     """
     Traffic Accident Prediction data and model hyperparameter manager
     """
-    def __init__(self, ver_dir, ver_file=None, use_current_dir=False, max_year=2015):
+    def __init__(self, ver_dir, ver_file=None, use_current_dir=False, max_year='2015'):
         # Get the directory right
         if ver_file is None:
             ver_file = ver_dir
@@ -120,12 +120,12 @@ class modelmetrics(tap):
             self.parse_evaluate_model_print(score)
 
         return score
-    
+
     @staticmethod
     def parse_evaluate_model_print(eval_res):
         for k, v in eval_res.items():
             if v is not None:
-                print(k + ': ' + v, sep='')
+                print(k + ':\n{}'.format(v), sep='')
 
     """Student T-test to compare the significance between models
     """
