@@ -117,16 +117,12 @@ class modelmetrics(tap):
         }
 
         if do_print == True:
-            if score['name'] is not None:
-                print(score['name'])
-            print('Accuracy: {}'.format(score['acc']))
-            print('Confusion Matrix:\n{}'.format(score['cm']))
-            print(score['report'])
+            self.parse_evaluate_model_print(score)
 
         return score
     
     @staticmethod
-    def parse_evaluate_model_print(self, eval_res):
+    def parse_evaluate_model_print(eval_res):
         for k, v in eval_res.items():
             if v is not None:
                 print(k + ': ' + v, sep='')
