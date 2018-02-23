@@ -1,12 +1,13 @@
-import tap
+from tap import modelling
 
 from sklearn.feature_selection import RFECV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.externals import joblib
 
-rfecv = RFECV(RandomForestClassifier(n_estimators=30, n_jobs=3))
-pre_model = tap.modelling('2.3')
+rfecv = RFECV(RandomForestClassifier(n_estimators=30, n_jobs=6))
+pre_model = modelling('2.5')
 data = pre_model.load_tap()
+drop_cols = ['Day_of_Week', 'Is_Holiday', 'Year', 'Month', 'Hour']
 
-selector = rfecv.fit(data.x, data.y)
-joblib.dump(selector, 'rfecv-fs2-v1.pkl')
+selector = rfecv.fit(data.x.drop(drop_cols, axis=1), data.y)
+joblib.dump(selector, 'tmp/rfecv-fs2-v2018-2.5.pkl')
