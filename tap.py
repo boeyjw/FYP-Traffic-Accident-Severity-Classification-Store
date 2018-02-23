@@ -99,7 +99,7 @@ class modelmetrics(tap):
 
     """Evaluates model accuracy, precision, recall, f1 and confusion matrix
     """
-    def evaluate_model(self, y_true=None, y_pred=None, mode='weighted', name=None, do_print=False):
+    def evaluate_model(self, y_true=None, y_pred=None, mode='macro', name=None, do_print=False):
         if y_true is None:
             y_true = self.y_true
         if y_pred is None:
@@ -125,7 +125,7 @@ class modelmetrics(tap):
     def parse_evaluate_model_print(eval_res):
         for k, v in eval_res.items():
             if v is not None:
-                print(k + ':\n{}'.format(v), sep='')
+                print(k + ':\n{}\n'.format(v), sep='')
 
     """Student T-test to compare the significance between models
     """
