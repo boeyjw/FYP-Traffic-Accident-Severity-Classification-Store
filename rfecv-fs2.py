@@ -4,7 +4,7 @@ from sklearn.feature_selection import RFECV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.externals import joblib
 
-rfecv = RFECV(RandomForestClassifier(n_estimators=30, n_jobs=6))
+rfecv = RFECV(RandomForestClassifier(n_estimators=30, n_jobs=6, verbose=1), verbose=1)
 pre_model = modelling('2.5')
 data = pre_model.load_tap()
 drop_cols = ['Day_of_Week', 'Is_Holiday', 'Year', 'Month', 'Hour']
