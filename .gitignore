@@ -8,3 +8,4 @@ tap/__pycache__/**
 .vscode/**
 *.ignore
 .Rhistory
+.pkl.z
