@@ -29,7 +29,6 @@ class metrics():
             y_true = self.y_true
         if y_pred is None:
             y_pred = self.y_pred
-
         sss = sensitivity_specificity_support(y_true, y_pred, average=mode)
         score = {
             'name': name,
@@ -40,10 +39,8 @@ class metrics():
             'specificity': sss[1],
             'support': sss[2]
         }
-
         if do_print == True:
             self.parse_evaluate_model_print(score)
-
         return score
 
     @staticmethod
@@ -62,5 +59,4 @@ class metrics():
                 print(ttest['name'])
         if do_print == True:
             print('Statistics: {}\np-value: {}'.format(ttest['ttest'][0], ttest['ttest'][1]))
-
         return ttest
