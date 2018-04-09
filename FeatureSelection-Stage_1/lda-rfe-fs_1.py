@@ -5,7 +5,13 @@ from sklearn.feature_selection import RFE
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.externals import joblib
 
-tap = pd.read_csv('acc2005_2016-v2018.2.3.csv').merge(pd.read_csv('veh2005_2016-v2018.2.3.csv'), on='Accident_Index').drop(['Accident_Index', 'Date_Time'], axis=1)
+ver_dir = '2.4'
+
+tap = pd.read_csv('acc2005_2016-v2018.' + ver_dir + '.csv').merge(
+    pd.read_csv('veh2005_2016-v2018.' + ver_dir + '.csv'), on='Accident_Index'
+).merge(
+    pd.read_csv('cas2005_2016-v2018.' + ver_dir + '.csv'), on='Accident_Index'
+).drop(['Accident_Index', 'Date_Time'], axis=1)
 
 lda = OrderedDict([
     ('lda-rfe-svd', LinearDiscriminantAnalysis(solver='svd')),
@@ -23,4 +29,4 @@ for label, clf in lda.items():
         label: rfe
     })
 
-joblib.dump(rfe_store, 'lda-rfe-fs1.pkl')
+joblib.dump(rfe_store, 'tmp/lda-rfe-fs1.pkl')

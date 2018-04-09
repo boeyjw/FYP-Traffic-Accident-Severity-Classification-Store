@@ -7,11 +7,16 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_recall_fscore_support
 
-RANDOM_STATE = 500
-
+RANDOM_STATE = np.random.randint(999999999)
+ver_dir = '2.4'
 # Init
-tap = pd.read_csv('acc2005_2016-v2018.2.3.csv').merge(pd.read_csv('veh2005_2016-v2018.2.3.csv'), on='Accident_Index').drop(['Accident_Index', 'Date_Time'], axis=1)
-fs1 = joblib.load('lda-rfe-fs1.pkl')
+tap = pd.read_csv('acc2005_2016-v2018.' + ver_dir + '.csv').merge(
+    pd.read_csv('veh2005_2016-v2018.' + ver_dir + '.csv'), on='Accident_Index'
+).merge(
+    pd.read_csv('cas2005_2016-v2018.' + ver_dir + '.csv'), on='Accident_Index'
+).drop(['Accident_Index', 'Date_Time'], axis=1)
+
+fs1 = joblib.load('tmp/lda-rfe-fs1.pkl')
 rf_clf = RandomForestClassifier(n_estimators=30, n_jobs=6, random_state=RANDOM_STATE, verbose=1)
 
 X, Y = tap.drop('Accident_Severity', axis=1), tap['Accident_Severity']
@@ -29,5 +34,5 @@ for label, fs in fs1.items():
         'PRF1': precision_recall_fscore_support(Y_test, y_pred, average='macro')
     }
 
-joblib.dump(y_score, 'lda-rfe-fs1-res.pkl')
-joblib.dump(X.columns, 'lda-rfe-tap_col.pkl')
+joblib.dump(y_score, 'tmp/lda-rfe-fs1-res.pkl')
+joblib.dump(X.columns, 'tmp/lda-rfe-tap_col.pkl')
