@@ -13,14 +13,14 @@ from tap import modelmetrics
 # License: BSD 3 Clause
 
 RANDOM_STATE = 123456789
-N_JOBS=3
+N_JOBS=7
 
 print("Init")
 # Import training dataset
 X, y = joblib.load("stratified_X_train.pkl.z"), joblib.load("stratified_Y_train.pkl.z")
 # Split out validation set
 X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=0.2, random_state=RANDOM_STATE, stratify=y)
-rfecv = joblib.load("rfecv_noCAS-res.pkl")
+rfecv = joblib.load("rfecv_withCAS-res.pkl")
 
 # NOTE: Setting the `warm_start` construction parameter to `True` disables
 # support for parallelized ensembles but is necessary for tracking the OOB
@@ -29,15 +29,15 @@ ensemble_clfs = [
     ("max_features='sqrt'",
         RandomForestClassifier(warm_start=True, oob_score=True,
                                 max_features="sqrt",
-                                random_state=RANDOM_STATE, n_jobs=7)),
+                                random_state=RANDOM_STATE, n_jobs=N_JOBS)),
     ("max_features='log2'",
         RandomForestClassifier(warm_start=True, max_features='log2',
                                 oob_score=True,
-                                random_state=RANDOM_STATE, n_jobs=7)),
+                                random_state=RANDOM_STATE, n_jobs=N_JOBS)),
     ("max_features=None",
         RandomForestClassifier(warm_start=True, max_features=None,
                                 oob_score=True,
-                                random_state=RANDOM_STATE, n_jobs=7))
+                                random_state=RANDOM_STATE, n_jobs=N_JOBS))
 ]
 met = modelmetrics.metrics()
 
@@ -64,8 +64,8 @@ for label, clf in ensemble_clfs:
 
 print("Dump")
 # Dump the oob score
-joblib.dump(error_rate, "rf_oob-score_noCAS.pkl")
-joblib.dump(all_met, "rf_oob-score-metrics_noCAS.pkl")
+joblib.dump(error_rate, "rf_oob-score_withCAS.pkl")
+joblib.dump(all_met, "rf_oob-score-metrics_withCAS.pkl")
 
 # Generate the "OOB error rate" vs. "n_estimators" plot.
 for label, clf_err in error_rate.items():
