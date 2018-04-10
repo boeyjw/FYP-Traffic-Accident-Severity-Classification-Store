@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 
+from multiprocessing import cpu_count
 from collections import OrderedDict
 from sklearn.externals import joblib
 from sklearn.ensemble import RandomForestClassifier
@@ -11,38 +12,41 @@ from tap import modelmetrics
 #         Andreas Mueller <amueller@ais.uni-bonn.de>
 #
 # License: BSD 3 Clause
+# Reference: http://scikit-learn.org/stable/auto_examples/ensemble/plot_ensemble_oob.html
 
 RANDOM_STATE = 123456789
-N_JOBS=3
+N_JOBS=cpu_count() - 1 # Leave 1 thread for system use (extremely important during thrashing)
 
 print("Init")
 # Import training dataset
 X, y = joblib.load("stratified_X_train.pkl.z"), joblib.load("stratified_Y_train.pkl.z")
 # Split out validation set
 X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=0.2, random_state=RANDOM_STATE, stratify=y)
+# Load selected features
 rfecv = joblib.load("rfecv_withCAS-res.pkl")
 
 # NOTE: Setting the `warm_start` construction parameter to `True` disables
 # support for parallelized ensembles but is necessary for tracking the OOB
 # error trajectory during training.
 ensemble_clfs = [
-    ("RandomForestClassifier, max_features='sqrt'",
+    ("max_features='sqrt'",
         RandomForestClassifier(warm_start=True, oob_score=True,
                                 max_features="sqrt",
                                 random_state=RANDOM_STATE, n_jobs=N_JOBS)),
-    ("RandomForestClassifier, max_features='log2'",
+    ("max_features='log2'",
         RandomForestClassifier(warm_start=True, max_features='log2',
                                 oob_score=True,
                                 random_state=RANDOM_STATE, n_jobs=N_JOBS)),
-    ("RandomForestClassifier, max_features=None",
+    ("max_features=None",
         RandomForestClassifier(warm_start=True, max_features=None,
                                 oob_score=True,
                                 random_state=RANDOM_STATE, n_jobs=N_JOBS))
 ]
 met = modelmetrics.metrics()
 
-# Map a classifier name to a list of (<n_estimators>, <error rate>) pairs.
+# Map max_features to a list of (<n_estimators>, <error rate>) pairs.
 error_rate = OrderedDict((label, []) for label, _ in ensemble_clfs)
+# Map max_features name to a list of (<n_estimators>, <metrics>) pairs.
 all_met = OrderedDict((label, []) for label, _ in ensemble_clfs)
 
 # Range of `n_estimators` values to explore.
