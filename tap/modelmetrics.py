@@ -1,6 +1,6 @@
 import numpy as np
 
-from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.metrics import confusion_matrix, accuracy_score, f1_score
 from imblearn.metrics import sensitivity_score, classification_report_imbalanced, sensitivity_specificity_support
 from scipy.stats import ttest_rel
 
@@ -37,7 +37,10 @@ class metrics():
             'report': classification_report_imbalanced(y_true, y_pred),
             'sensitivity': sss[0],
             'specificity': sss[1],
-            'support': sss[2]
+            'support': sss[2],
+            'f1_micro': f1_score(y_true=y_true, y_pred=y_pred, average='micro'),
+            'f1_weighted': f1_score(y_true=y_true, y_pred=y_pred, average='weighted'),
+            'f1_macro': f1_score(y_true=y_true, y_pred=y_pred, average='macro'),
         }
 
         if do_print == True:
