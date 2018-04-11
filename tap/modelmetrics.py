@@ -29,7 +29,6 @@ class metrics():
             y_true = self.y_true
         if y_pred is None:
             y_pred = self.y_pred
-
         sss = sensitivity_specificity_support(y_true, y_pred, average=mode)
         score = {
             'name': name,
@@ -43,7 +42,6 @@ class metrics():
 
         if do_print == True:
             self.parse_evaluate_model_print(score)
-
         return score
 
     @staticmethod
