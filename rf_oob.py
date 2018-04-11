@@ -19,11 +19,12 @@ N_JOBS=cpu_count() - 1 # Leave 1 thread for system use (extremely important duri
 
 print("Init")
 # Import training dataset
-X, y = joblib.load("stratified_X_train.pkl.z"), joblib.load("stratified_Y_train.pkl.z")
+X, y = joblib.load("stratified_X_train-hasCS.pkl.z"), joblib.load("stratified_Y_train.pkl.z")
 # Split out validation set
 X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=0.2, random_state=RANDOM_STATE, stratify=y)
 # Load selected features
 rfecv = joblib.load("rfecv_withCAS-res.pkl")
+fn_append = "withCAS"
 
 # NOTE: Setting the `warm_start` construction parameter to `True` disables
 # support for parallelized ensembles but is necessary for tracking the OOB
@@ -68,8 +69,8 @@ for label, clf in ensemble_clfs:
 
 print("Dump")
 # Dump the oob score
-joblib.dump(error_rate, "rf_oob-score_withCAS.pkl")
-joblib.dump(all_met, "rf_oob-score-metrics_withCAS.pkl")
+joblib.dump(error_rate, "rf_oob-score_" + fn_append + ".pkl")
+joblib.dump(all_met, "rf_oob-score-metrics_" + fn_append + ".pkl")
 
 # Generate the "OOB error rate" vs. "n_estimators" plot.
 for label, clf_err in error_rate.items():
@@ -77,7 +78,8 @@ for label, clf_err in error_rate.items():
     plt.plot(xs, ys, label=label)
 
 plt.xlim(min_estimators, max_estimators)
-plt.xlabel("n_estimators")
-plt.ylabel("OOB error rate")
+plt.xlabel("Number of Estimators")
+plt.ylabel("OOB Error Rate")
+plt.title("OOB Error Rate against Number of Estimators for Casualty Inclusive Features")
 plt.legend(loc="upper right")
 plt.show()
