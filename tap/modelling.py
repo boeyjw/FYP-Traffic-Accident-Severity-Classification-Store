@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from collections import namedtuple
-
+# Deprecated
 class dataload:
     def __init__(self, ver_dir, model_on=None, file_ver=None):
         self.__model_on = str(model_on).lower() if model_on is not None else None
