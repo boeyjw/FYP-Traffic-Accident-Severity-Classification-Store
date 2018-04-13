@@ -7,13 +7,13 @@ def get_constants(**kwargs):
     c = {
         "RANDOM_STATE": 123456789,
         "VALIDATION_SIZE": 0.2,
-        "TEST_sIZE": 0.2,
+        "TEST_SIZE": 0.2,
         "TRAIN_SIZE": 0.8,
         "N_JOBS": cpu_count() -1
     }
     for k, v in kwargs.items():
         c[k] = v
-    
+
     return c
 
 def get_data_dir(impute_ver="2.5"):
