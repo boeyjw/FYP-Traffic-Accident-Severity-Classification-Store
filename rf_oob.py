@@ -23,8 +23,11 @@ X, y = joblib.load("stratified_X_train-hasCS.pkl.z"), joblib.load("stratified_Y_
 # Split out validation set
 X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=0.2, random_state=RANDOM_STATE, stratify=y)
 # Load selected features
-rfecv = joblib.load("rfecv_withCAS-res.pkl")
-fn_append = "withCAS"
+# rfecv = joblib.load("rfecv_withCAS-res.pkl")
+rfecv = {
+    "after_sel_cols": joblib.load("rfecv_withCAS-res.pkl")["after_sel_cols"].tolist() + joblib.load("rfecv_noCAS-res.pkl")["after_sel_cols"].tolist()
+}
+fn_append = "withCAS-onTopNoCAS"
 
 # NOTE: Setting the `warm_start` construction parameter to `True` disables
 # support for parallelized ensembles but is necessary for tracking the OOB
@@ -66,6 +69,7 @@ for label, clf in ensemble_clfs:
         m = met.evaluate_model(y_true=Y_test, y_pred=clf.predict(X_test[rfecv["after_sel_cols"]]), name=label + ", n_estimators=" + str(len(clf.estimators_)))
         all_met[label].append((i, m))
         print(label + ": " + str(len(clf.estimators_)) + " - " + str(oob_error) + " - " + str(m['sensitivity']))
+    del clf
 
 print("Dump")
 # Dump the oob score
