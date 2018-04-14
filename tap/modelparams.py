@@ -20,8 +20,8 @@ def get_data_dir(impute_ver="2.5"):
     dirs = {
         "orig": "pointer/",
         "impute": "Imputation/" + impute_ver + "/",
-        "train": "training/",
-        "test": "testing/",
+        "train": "train/",
+        "test": "test/",
     }
 
     return dirs

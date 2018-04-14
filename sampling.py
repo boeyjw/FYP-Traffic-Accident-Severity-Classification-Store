@@ -52,5 +52,3 @@ for k, v in undersampler.items():
     joblib.dump({"X": newX, "Y": newY}, "stratified_XY_train.oh." + k + ".pkl.xz")
     print("Count: " + str(Counter(newY)))
 
-
-

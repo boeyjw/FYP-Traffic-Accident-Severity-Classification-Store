@@ -14,16 +14,20 @@ from scipy import interp
 
 RANDOM_STATE = 123456789
 N_JOBS=cpu_count() - 1 # Leave 1 thread for system use (extremely important during thrashing)
-fn = "roc_auc_score-all.oh.tlsmote.pkl"
+fn = "roc_auc_score-all.oh.tlsmote.cas.pkl.xz"
 
 print("Init")
 # Import training dataset
 # X, y = joblib.load("stratified_X_train.pkl.z"), joblib.load("stratified_Y_train.pkl.z")
-sample = joblib.load("stratified_XY_train.oh.tlsmote.pkl.xz")
+sample = joblib.load("train/stratified_XY_train.oh.tlsmote.cas.pkl.xz")
+cattap = joblib.load("test/stratified_traintest.oh.pkl.xz")
 
 print("Validation set")
 # Split out validation set
-X_train, X_test, Y_train, Y_test = train_test_split(sample["X"], sample["Y"], test_size=0.2, random_state=RANDOM_STATE, stratify=sample["Y"])
+# X_train, X_test, Y_train, Y_test = train_test_split(sample["X"], sample["Y"], test_size=0.2, random_state=RANDOM_STATE, stratify=sample["Y"])
+X_train, X_test, Y_train, Y_test = sample["X"], cattap["x"][sample["X"].columns], sample["Y"],  cattap["y"]
+print(X_train.columns)
+print(X_test.columns)
 # # Load selected features
 # rfecv = joblib.load("rfecv_withCAS-res.pkl")
 # X_train, X_test, Y_train, Y_test = train_test_split(X[rfecv["after_sel_cols"]], y, test_size=0.2, random_state=RANDOM_STATE, stratify=y)
@@ -35,7 +39,7 @@ n_classes = y_test.shape[1]
 
 print("Train")
 # Learn to predict each class against the other
-classifier = RandomForestClassifier(n_estimators=100, n_jobs=N_JOBS, max_features="sqrt", random_state=RANDOM_STATE)
+classifier = RandomForestClassifier(n_estimators=50, n_jobs=N_JOBS, random_state=RANDOM_STATE)
 y_score = classifier.fit(X_train, Y_train).predict_proba(X_test)
 
 print("Compute ROC")
