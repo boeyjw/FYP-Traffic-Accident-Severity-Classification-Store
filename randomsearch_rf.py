@@ -23,7 +23,7 @@ print("Init")
 params = modelparams.get_constants()
 rf = RandomForestClassifier(n_estimators=50, random_state=params["RANDOM_STATE"], oob_score=True, n_jobs=params["N_JOBS"])
 n_iter_torun = 100
-ext = ".cas"
+ext = ".nocas"
 param_dist = {
     "max_depth": [None] + list(range(3, 50, 2)),
     "min_samples_leaf": sp_randint(1, 100),
@@ -31,9 +31,11 @@ param_dist = {
     "max_features": ["sqrt", "log2"]
 }
 rscv = RandomizedSearchCV(estimator=rf, n_iter=n_iter_torun, param_distributions=param_dist, scoring="f1_micro", cv=StratifiedKFold(5), verbose=1)
-sample = joblib.load("train/stratified_XY_train.oh.tlsmote.cas.pkl.xz")
 
-print("Search RF")
-rscv.fit(sample["X"], sample["Y"])
-joblib.dump(rscv, "random_search_rf" + ext + ".pkl.xz")
-report(rscv.cv_results_)
+if __name__ == "__main__":
+    sample = joblib.load("train/stratified_XY_train.oh.tlsmote" + ext + ".pkl.xz")
+
+    print("Search RF")
+    rscv.fit(sample["X"], sample["Y"])
+    joblib.dump(rscv, "random_search_rf" + ext + ".pkl.xz")
+    report(rscv.cv_results_)

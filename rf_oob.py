@@ -21,12 +21,12 @@ N_JOBS = params['N_JOBS'] # Leave 1 thread for system use (extremely important d
 print("Init")
 # Import training dataset
 # X, y = joblib.load("stratified_X_train.pkl.z"), joblib.load("stratified_Y_train.pkl.z")
-sample = joblib.load("train/stratified_XY_train.oh.tlsmote.cas.pkl.xz")
+fn_append = ".nocas"
+sample = joblib.load("train/stratified_XY_train.oh.tlsmote" + fn_append + ".pkl.xz")
 # Split out validation set
 X_train, X_test, Y_train, Y_test = train_test_split(sample["X"], sample["Y"], test_size=params["TEST_SIZE"], random_state=RANDOM_STATE, stratify=sample["Y"])
 # del X, y # Save some memory as original data has been split
 del sample # Save some memory as original data has been split
-fn_append = ".cas"
 
 # Load selected features
 # rfecv = joblib.load("rfecv_withCAS-res.pkl")
