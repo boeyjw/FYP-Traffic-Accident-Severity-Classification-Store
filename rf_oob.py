@@ -20,17 +20,19 @@ N_JOBS = params['N_JOBS'] # Leave 1 thread for system use (extremely important d
 
 print("Init")
 # Import training dataset
-X, y = joblib.load("stratified_X_train.pkl.z"), joblib.load("stratified_Y_train.pkl.z")
+# X, y = joblib.load("stratified_X_train.pkl.z"), joblib.load("stratified_Y_train.pkl.z")
+sample = joblib.load("train/stratified_XY_train.oh.tlsmote.cas.pkl.xz")
 # Split out validation set
-X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=params["TEST_SIZE"], random_state=RANDOM_STATE, stratify=y)
-del X, y # Save some memory as original data has been split
+X_train, X_test, Y_train, Y_test = train_test_split(sample["X"], sample["Y"], test_size=params["TEST_SIZE"], random_state=RANDOM_STATE, stratify=sample["Y"])
+# del X, y # Save some memory as original data has been split
+del sample # Save some memory as original data has been split
+fn_append = ".cas"
 
 # Load selected features
 # rfecv = joblib.load("rfecv_withCAS-res.pkl")
-rfecv = {
-    "after_sel_cols": joblib.load("rfecv_withCAS-res.pkl")["after_sel_cols"].tolist() + joblib.load("rfecv_noCAS-res.pkl")["after_sel_cols"].tolist()
-}
-fn_append = "withCAS-onTopNoCAS"
+# rfecv = {
+#     "after_sel_cols": joblib.load("rfecv_withCAS-res.pkl")["after_sel_cols"].tolist() + joblib.load("rfecv_noCAS-res.pkl")["after_sel_cols"].tolist()
+# }
 
 # NOTE: Setting the `warm_start` construction parameter to `True` disables
 # support for parallelized ensembles but is necessary for tracking the OOB
@@ -40,12 +42,8 @@ ensemble_clfs = [
         RandomForestClassifier(warm_start=True, oob_score=True,
                                 max_features="sqrt",
                                 random_state=RANDOM_STATE, n_jobs=N_JOBS)),
-    ("max_features=50%",
-        RandomForestClassifier(warm_start=True, max_features=0.5,
-                                oob_score=True,
-                                random_state=RANDOM_STATE, n_jobs=N_JOBS)),
-    ("max_features=75%",
-        RandomForestClassifier(warm_start=True, max_features=0.75,
+    ("max_features=log2",
+        RandomForestClassifier(warm_start=True, max_features="log2",
                                 oob_score=True,
                                 random_state=RANDOM_STATE, n_jobs=N_JOBS)),
     ("max_features=all",
@@ -61,27 +59,27 @@ error_rate = OrderedDict((label, []) for label, _ in ensemble_clfs)
 all_met = OrderedDict((label, []) for label, _ in ensemble_clfs)
 
 # Range of `n_estimators` values to explore.
-min_estimators = 30 # Any less will cause trees to learn insufficient features
-max_estimators = 100 # Any more wil take ages to complete due to thrashing
+min_estimators = 50 # Any less will cause trees to learn insufficient features
+max_estimators = 200 # Any more wil take ages to complete due to thrashing
 
 print("OOB")
 for label, clf in ensemble_clfs:
     for i in range(min_estimators, max_estimators + 1):
         clf.set_params(n_estimators=i)
-        clf.fit(X_train[rfecv["after_sel_cols"]], Y_train)
+        clf.fit(X_train, Y_train)
 
         # Record the OOB error and validation metrics for each `n_estimators=i` setting.
         oob_error = 1 - clf.oob_score_
         error_rate[label].append((i, oob_error))
-        m = met.evaluate_model(y_true=Y_test, y_pred=clf.predict(X_test[rfecv["after_sel_cols"]]), name=label + ", n_estimators=" + str(len(clf.estimators_)))
+        m = met.evaluate_model(y_true=Y_test, y_pred=clf.predict(X_test), name=label + ", n_estimators=" + str(len(clf.estimators_)))
         all_met[label].append((i, m))
         print(label + ": " + str(len(clf.estimators_)) + " - " + str(oob_error) + " - " + str(m['f1_micro']))
 
 del clf
 print("Dump")
 # Dump the oob score
-joblib.dump(error_rate, "rf_oob-score_" + fn_append + ".pkl")
-joblib.dump(all_met, "rf_oob-score-metrics_" + fn_append + ".pkl")
+joblib.dump(error_rate, "rf_oob-score" + fn_append + ".pkl.xz")
+joblib.dump(all_met, "rf_oob-score-metrics" + fn_append + ".pkl.xz")
 
 # Generate the "OOB error rate" vs. "n_estimators" plot.
 for label, clf_err in error_rate.items():
