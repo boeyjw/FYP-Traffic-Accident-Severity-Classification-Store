@@ -9,3 +9,4 @@ tap/__pycache__/**
 *.ignore
 .Rhistory
 *.pkl.z
+search/grid_search_rf.cas.pkl.xz
