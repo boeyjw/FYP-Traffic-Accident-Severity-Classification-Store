@@ -6,40 +6,50 @@ from multiprocessing import cpu_count
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_curve, auc
-from sklearn.preprocessing import LabelBinarizer
+from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.externals import joblib
+from keras.models import load_model
+from keras.utils import to_categorical
 from scipy import interp
 
 # Reference: http://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html
 
 RANDOM_STATE = 123456789
 N_JOBS=cpu_count() - 1 # Leave 1 thread for system use (extremely important during thrashing)
-fn = "roc_auc_score-all.oh.tlsmote.cas.pkl.xz"
+is_rf = True # SET THIS TO FALSE IF NN
+ext = ".cas.v2"
+fn = "roc_auc_score-all.oh.tlsmote" + ext + ".pkl.xz"
 
 print("Init")
 # Import training dataset
 # X, y = joblib.load("stratified_X_train.pkl.z"), joblib.load("stratified_Y_train.pkl.z")
-sample = joblib.load("train/stratified_XY_train.oh.tlsmote.cas.pkl.xz")
+sample = joblib.load("train/stratified_XY_train.oh.tlsmote" + ext + "pkl.xz")
 cattap = joblib.load("test/stratified_traintest.oh.pkl.xz")
+X, x, Y, y = sample["X2"], cattap["x"][sample["X2"].columns], sample["Y"],  cattap["y"]
+del sample, cattap
+print("Split Train Test set")
+# NN preprocessing
+if not is_rf:
+    scaler = StandardScaler()
+    ordinal_cols = np.array(["Number_of_Casualties", "Number_of_Vehicles", "Speed_Limit", "Age_Band_of_Casualty"])
+    ordinal_cols_mask = np.isin(ordinal_cols, X.columns)
+    if any(ordinal_cols_mask):
+        X[ordinal_cols[ordinal_cols_mask]] = scaler.fit_transform(X[ordinal_cols[ordinal_cols_mask]])
+        x[ordinal_cols[ordinal_cols_mask]] = scaler.fit_transform(x[ordinal_cols[ordinal_cols_mask]])
 
-print("Validation set")
-# Split out validation set
-# X_train, X_test, Y_train, Y_test = train_test_split(sample["X"], sample["Y"], test_size=0.2, random_state=RANDOM_STATE, stratify=sample["Y"])
-X_train, X_test, Y_train, Y_test = sample["X"], cattap["x"][sample["X"].columns], sample["Y"],  cattap["y"]
-print(X_train.columns)
-print(X_test.columns)
-# # Load selected features
-# rfecv = joblib.load("rfecv_withCAS-res.pkl")
-# X_train, X_test, Y_train, Y_test = train_test_split(X[rfecv["after_sel_cols"]], y, test_size=0.2, random_state=RANDOM_STATE, stratify=y)
+X_train, X_test, Y_train, Y_test = sample["X2"], cattap["x"][sample["X2"].columns], sample["Y"],  cattap["y"]
 
 # Binarize the test label
 lb = LabelBinarizer()
 y_test = lb.fit_transform(Y_test)
 n_classes = y_test.shape[1]
+if not is_rf:
+    Y_train, Y_test = to_categorical(Y_train - 1), to_categorical(Y_test - 1)
+
 
 print("Train")
 # Learn to predict each class against the other
-classifier = RandomForestClassifier(n_estimators=50, n_jobs=N_JOBS, random_state=RANDOM_STATE)
+classifier = joblib.load("model_final/RANDOM_FOREST_FINAL.pkl.xz") if is_rf else load_model("model_final/NEURAL_NETWORK_FINAL.h5")
 y_score = classifier.fit(X_train, Y_train).predict_proba(X_test)
 
 print("Compute ROC")
@@ -73,7 +83,7 @@ tpr["macro"] = mean_tpr
 roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
 
 print("dump")
-joblib.dump({"fpr":fpr, "tpr":tpr, "roc_auc":roc_auc}, fn)
+joblib.dump({"fpr":fpr, "tpr":tpr, "roc_auc":roc_auc}, "model_final/" + fn)
 
 print("Plot")
 # Plot all ROC curves

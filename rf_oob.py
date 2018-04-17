@@ -21,10 +21,10 @@ N_JOBS = params['N_JOBS'] # Leave 1 thread for system use (extremely important d
 print("Init")
 # Import training dataset
 # X, y = joblib.load("stratified_X_train.pkl.z"), joblib.load("stratified_Y_train.pkl.z")
-fn_append = ".nocas"
-sample = joblib.load("train/stratified_XY_train.oh.tlsmote" + fn_append + ".pkl.xz")
+ext = ".nocas.v2"
+sample = joblib.load("train/stratified_XY_train.oh.tlsmote" + ext + ".pkl.xz")
 # Split out validation set
-X_train, X_test, Y_train, Y_test = train_test_split(sample["X"], sample["Y"], test_size=params["TEST_SIZE"], random_state=RANDOM_STATE, stratify=sample["Y"])
+X_train, X_test, Y_train, Y_test = train_test_split(sample["X2"], sample["Y"], test_size=params["TEST_SIZE"], random_state=RANDOM_STATE, stratify=sample["Y"])
 # del X, y # Save some memory as original data has been split
 del sample # Save some memory as original data has been split
 
@@ -60,7 +60,7 @@ all_met = OrderedDict((label, []) for label, _ in ensemble_clfs)
 
 # Range of `n_estimators` values to explore.
 min_estimators = 50 # Any less will cause trees to learn insufficient features
-max_estimators = 200 # Any more wil take ages to complete due to thrashing
+max_estimators = 150 # Any more wil take ages to complete due to thrashing
 
 print("OOB")
 for label, clf in ensemble_clfs:
@@ -73,13 +73,13 @@ for label, clf in ensemble_clfs:
         error_rate[label].append((i, oob_error))
         m = met.evaluate_model(y_true=Y_test, y_pred=clf.predict(X_test), name=label + ", n_estimators=" + str(len(clf.estimators_)))
         all_met[label].append((i, m))
-        print(label + ": " + str(len(clf.estimators_)) + " - " + str(oob_error) + " - " + str(m['f1_micro']))
+        print(label + ": " + str(len(clf.estimators_)) + " - " + str(oob_error) + " - " + str(m['f1_macro']))
 
 del clf
-print("Dump")
+print("Dump: " + ext)
 # Dump the oob score
-joblib.dump(error_rate, "rf_oob-score" + fn_append + ".pkl.xz")
-joblib.dump(all_met, "rf_oob-score-metrics" + fn_append + ".pkl.xz")
+joblib.dump(error_rate, "rf_oob/rf_oob-score" + ext + ".pkl.xz")
+joblib.dump(all_met, "rf_oob/rf_oob-score-metrics" + ext + ".pkl.xz")
 
 # Generate the "OOB error rate" vs. "n_estimators" plot.
 for label, clf_err in error_rate.items():

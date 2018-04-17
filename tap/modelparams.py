@@ -19,9 +19,11 @@ def get_constants(**kwargs):
 def get_data_dir(impute_ver="2.5"):
     dirs = {
         "orig": "pointer/",
-        "impute": "Imputation/" + impute_ver + "/",
-        "train": "train/",
-        "test": "test/",
+        "imp": "Imputation/" + impute_ver + "/",
+        "tr": "train/",
+        "tst": "test/",
+        "plt": "plots",
+        "fin": "final"
     }
 
     return dirs

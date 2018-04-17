@@ -24,7 +24,7 @@ class metrics():
 
     """Evaluates model accuracy, precision, recall, f1 and confusion matrix
     """
-    def evaluate_model(self, y_true=None, y_pred=None, mode='micro', name=None, do_print=False):
+    def evaluate_model(self, y_true=None, y_pred=None, mode='macro', name=None, do_print=False):
         if y_true is None:
             y_true = self.y_true
         if y_pred is None:

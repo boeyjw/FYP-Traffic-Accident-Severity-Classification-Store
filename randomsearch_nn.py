@@ -25,15 +25,26 @@ def report(results, n_top=3):
             print("Parameters: {0}".format(results['params'][candidate]))
             print("")
 
-def create_nn(units=90, units_2=50, kernel_reg=0.0001, kernel_init="glorot_uniform", optimizer="adam"):
+def create_nn(units=90, units_2=50, drop_rate=0.2, kernel_init="glorot_uniform", optimizer="adam"):
     nn = Sequential()
     # Manually change input_dim to match input shape
-    nn.add(Dense(units=units, input_dim=70, activation="relu", kernel_regularizer=l2(kernel_reg), kernel_initializer=kernel_init))
-    nn.add(Dense(units=units_2, activation="relu", kernel_regularizer=l2(kernel_reg), kernel_initializer=kernel_init))
+    nn.add(Dense(units=units, input_dim=70, activation="relu", kernel_initializer=kernel_init))
+    nn.add(Dropout(rate=drop_rate))
+    nn.add(Dense(units=units_2, activation="relu", kernel_initializer=kernel_init))
+    nn.add(Dropout(rate=drop_rate))
     nn.add(Dense(units=3, activation="softmax"))
     nn.compile(optimizer=optimizer, loss="categorical_crossentropy", metrics=["categorical_accuracy"])
-
+    nn.summary()
     return nn
+# def create_nn(units=90, units_2=50, kernel_reg=0.0001, kernel_init="glorot_uniform", optimizer="adam"):
+#     nn = Sequential()
+#     # Manually change input_dim to match input shape
+#     nn.add(Dense(units=units, input_dim=70, activation="relu", kernel_regularizer=l2(kernel_reg), kernel_initializer=kernel_init))
+#     nn.add(Dense(units=units_2, activation="relu", kernel_regularizer=l2(kernel_reg), kernel_initializer=kernel_init))
+#     nn.add(Dense(units=3, activation="softmax"))
+#     nn.compile(optimizer=optimizer, loss="categorical_crossentropy", metrics=["categorical_accuracy"])
+    # return nn
+
 if __name__ == "__main__":
     print("Init")
     ext = ".cas.v2"
@@ -55,11 +66,12 @@ if __name__ == "__main__":
     param_dist = {
         "units": sp_randint(int(np.round(Xt.shape[1] * 0.5)),  Xt.shape[1] + 50),
         "units_2": sp_randint(int(np.round(Xt.shape[1] * 0.5)),  Xt.shape[1]),
-        "kernel_reg": [0.01, 0.001, 0.0001],
+        # "kernel_reg": [0.01, 0.001, 0.0001],
         "kernel_init": ["glorot_uniform", "lecun_uniform", "glorot_normal", "lecun_normal"],
         "optimizer": ["adam", "nadam"],
         "batch_size": [128, 256, 512],
-        "epochs": [75, 100, 150]
+        "epochs": [75, 100, 150],
+        "drop_rate": list(range(0.2, 0.5, 0.1))
     }
     fit_params = {
         "callbacks": [EarlyStopping(monitor="val_loss", patience=10)],
