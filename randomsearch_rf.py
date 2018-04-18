@@ -24,10 +24,10 @@ if __name__ == "__main__":
     params = modelparams.get_constants()
     rf = RandomForestClassifier(n_estimators=50, random_state=params["RANDOM_STATE"], oob_score=True, n_jobs=params["N_JOBS"])
     n_iter_torun = 20
-    ext = ".cas.v2"
+    ext = ".nocas.v2"
     param_dist = {
         "max_depth": [None] + list(range(3, 50, 2)),
-        "min_samples_leaf": sp_randint(1, 100),
+        "min_samples_leaf": sp_randint(1, 10),
         "n_estimators": sp_randint(50, 150),
         "max_features": ["sqrt", "log2"]
     }
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     Y = sample["Accident_Severity"].copy()
     del sample
 
-    print("Search RF")
+    print("Search RF: " + ext)
     rscv.fit(X, Y)
     print("Dump")
     res = pd.DataFrame(rscv.cv_results_)
