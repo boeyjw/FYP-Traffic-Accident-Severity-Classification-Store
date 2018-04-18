@@ -24,7 +24,7 @@ class metrics():
 
     """Evaluates model accuracy, precision, recall, f1 and confusion matrix
     """
-    def evaluate_model(self, y_true=None, y_pred=None, mode='macro', name=None, do_print=False):
+    def evaluate_model(self, y_true=None, y_pred=None, mode='macro', name=None, do_print=False, store_y_pred=False, do_return=True):
         if y_true is None:
             y_true = self.y_true
         if y_pred is None:
@@ -41,10 +41,13 @@ class metrics():
             'f1_micro': f1_score(y_true=y_true, y_pred=y_pred, average='micro'),
             'f1_weighted': f1_score(y_true=y_true, y_pred=y_pred, average='weighted'),
             'f1_macro': f1_score(y_true=y_true, y_pred=y_pred, average='macro'),
+            'y_pred': y_pred if store_y_pred else [],
         }
 
         if do_print == True:
             self.parse_evaluate_model_print(score)
+            if not do_return:
+                return
         return score
 
     @staticmethod
