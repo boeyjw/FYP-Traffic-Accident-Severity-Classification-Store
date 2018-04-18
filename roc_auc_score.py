@@ -43,7 +43,7 @@ n_classes = y_test.shape[1]
 
 print("Predict Proba")
 # Learn to predict each class against the other
-classifier = joblib.load("final/rf.final" + ext + ".pkl.xz")["model"] if is_rf else load_model("final/nn.final" + ext + ".hs")
+classifier = joblib.load("final/rf.final" + ext + ".pkl.xz")["model"] if is_rf else load_model("final/nn.final.model" + ext + ".hs")
 y_score = classifier.predict_proba(x)
 
 print("Compute ROC")
