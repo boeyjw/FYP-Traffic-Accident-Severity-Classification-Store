@@ -33,28 +33,46 @@ epochs = 200
 batch_size = 512
 
 ordinal_cols = np.array(["Number_of_Casualties", "Number_of_Vehicles", "Speed_Limit", "Age_Band_of_Casualty"])
-x = test["x"].copy()[1:1000] # test x
-y = test["y"].copy()[1:1000] # test y
+x = test["x"].copy() # test x
+y = test["y"].copy() # test y
 del test
 ordinal_cols_mask = np.isin(ordinal_cols, x.columns)
 if any(ordinal_cols_mask):
     x[ordinal_cols[ordinal_cols_mask]] = scaler.fit_transform(x[ordinal_cols[ordinal_cols_mask]])
 
 print(ext)
-# nocas
+# early stopping
+# train = joblib.load("train/stratified_XY_train.oh.tlsmote" + ext + ".pkl.xz")
+# X = train["X2"].copy()
+# Y = train["Y"].copy()
+# del train
+# ordinal_cols_mask = np.isin(ordinal_cols, X.columns)
+# if any(ordinal_cols_mask):
+#     X[ordinal_cols[ordinal_cols_mask]] = scaler.fit_transform(X[ordinal_cols[ordinal_cols_mask]])
+# Xt, xv, Yt, yv = train_test_split(X, Y, test_size=0.2, stratify=Y)
+# del X, Y
+# nn = build_nn(int(np.round(Xt.shape[1] * 2.5)), Xt.shape[1] * 2, Xt.shape[1])
+# hist = nn.fit(Xt, to_categorical(Yt - 1), batch_size=batch_size, epochs=epochs, callbacks=[EarlyStopping(monitor="val_loss", patience=10)], validation_data=(xv, to_categorical(yv - 1)))
+# y_pred = nn_predict(nn, x[Xt.columns], batch_size)
+# res = met.evaluate_model(y_true=y, y_pred=y_pred, mode="macro", name=ext, store_y_pred=True)
+# joblib.dump({
+#     "result": res,
+#     "history": hist.history
+# }, "final/nn.final" + ext + ".pkl.xz")
+# nn.save("final/nn.model.final" + ext + ".h5")
+
+# no early stopping
 train = joblib.load("train/stratified_XY_train.oh.tlsmote" + ext + ".pkl.xz")
-X = train["X2"].copy()[1:1000]
-Y = train["Y"].copy()[1:1000]
+X = train["X2"].copy()
+Y = train["Y"].copy()
 del train
 ordinal_cols_mask = np.isin(ordinal_cols, X.columns)
 if any(ordinal_cols_mask):
     X[ordinal_cols[ordinal_cols_mask]] = scaler.fit_transform(X[ordinal_cols[ordinal_cols_mask]])
-Xt, xv, Yt, yv = train_test_split(X, Y, test_size=0.2, stratify=Y)
-del X, Y
-nn = build_nn(int(np.round(Xt.shape[1] * 2.5)), Xt.shape[1] * 2, Xt.shape[1])
-hist = nn.fit(Xt, to_categorical(Yt - 1), batch_size=batch_size, epochs=epochs, callbacks=[EarlyStopping(monitor="val_loss", patience=10)], validation_data=(xv, to_categorical(yv - 1)))
-y_pred = nn_predict(nn, x[Xt.columns], batch_size)
-res = met.evaluate_model(y_true=y, y_pred=y_pred, mode="macro", name="nn_nocas", store_y_pred=True)
+nn = build_nn(int(np.round(X.shape[1] * 2.5)), X.shape[1] * 2, X.shape[1])
+hist = nn.fit(X, to_categorical(Y - 1), batch_size=batch_size, epochs=epochs)
+y_pred = nn_predict(nn, x[X.columns], batch_size)
+res = met.evaluate_model(y_true=y, y_pred=y_pred, mode="macro", name=ext, store_y_pred=True)
 joblib.dump({
     "result": res,
     "history": hist.history

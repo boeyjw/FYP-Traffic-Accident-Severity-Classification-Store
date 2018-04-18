@@ -53,7 +53,7 @@ class metrics():
     @staticmethod
     def parse_evaluate_model_print(eval_res):
         for k, v in eval_res.items():
-            if v is not None:
+            if v is not None and k != "y_pred":
                 print(k + ':\n{}\n'.format(v), sep='')
 
     """Student T-test to compare the significance between models
