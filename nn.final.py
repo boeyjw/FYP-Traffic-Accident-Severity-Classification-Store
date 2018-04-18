@@ -24,7 +24,7 @@ def nn_predict(nn, x, batch_size):
     return [np.argmax(v) + 1 for v in nn.predict(x, batch_size=batch_size)]
 
 print("Init")
-ext = ".nocas.v2"
+ext = ".cas.v2"
 params = modelparams.get_constants()
 met = modelmetrics.metrics()
 scaler = StandardScaler()
@@ -41,27 +41,6 @@ if any(ordinal_cols_mask):
     x[ordinal_cols[ordinal_cols_mask]] = scaler.fit_transform(x[ordinal_cols[ordinal_cols_mask]])
 
 print(ext)
-# early stopping
-# train = joblib.load("train/stratified_XY_train.oh.tlsmote" + ext + ".pkl.xz")
-# X = train["X2"].copy()
-# Y = train["Y"].copy()
-# del train
-# ordinal_cols_mask = np.isin(ordinal_cols, X.columns)
-# if any(ordinal_cols_mask):
-#     X[ordinal_cols[ordinal_cols_mask]] = scaler.fit_transform(X[ordinal_cols[ordinal_cols_mask]])
-# Xt, xv, Yt, yv = train_test_split(X, Y, test_size=0.2, stratify=Y)
-# del X, Y
-# nn = build_nn(int(np.round(Xt.shape[1] * 2.5)), Xt.shape[1] * 2, Xt.shape[1])
-# hist = nn.fit(Xt, to_categorical(Yt - 1), batch_size=batch_size, epochs=epochs, callbacks=[EarlyStopping(monitor="val_loss", patience=10)], validation_data=(xv, to_categorical(yv - 1)))
-# y_pred = nn_predict(nn, x[Xt.columns], batch_size)
-# res = met.evaluate_model(y_true=y, y_pred=y_pred, mode="macro", name=ext, store_y_pred=True)
-# joblib.dump({
-#     "result": res,
-#     "history": hist.history
-# }, "final/nn.final" + ext + ".pkl.xz")
-# nn.save("final/nn.model.final" + ext + ".h5")
-
-# no early stopping
 train = joblib.load("train/stratified_XY_train.oh.tlsmote" + ext + ".pkl.xz")
 X = train["X2"].copy()
 Y = train["Y"].copy()
@@ -69,14 +48,16 @@ del train
 ordinal_cols_mask = np.isin(ordinal_cols, X.columns)
 if any(ordinal_cols_mask):
     X[ordinal_cols[ordinal_cols_mask]] = scaler.fit_transform(X[ordinal_cols[ordinal_cols_mask]])
-nn = build_nn(int(np.round(X.shape[1] * 2.5)), X.shape[1] * 2, X.shape[1])
-hist = nn.fit(X, to_categorical(Y - 1), batch_size=batch_size, epochs=epochs)
-y_pred = nn_predict(nn, x[X.columns], batch_size)
+Xt, xv, Yt, yv = train_test_split(X, Y, test_size=0.1, stratify=Y)
+del X, Y
+nn = build_nn(int(np.round(Xt.shape[1] * 2.5)), Xt.shape[1] * 2, Xt.shape[1])
+hist = nn.fit(Xt, to_categorical(Yt - 1), batch_size=batch_size, epochs=epochs, validation_data=(xv, to_categorical(yv - 1)))
+y_pred = nn_predict(nn, x[Xt.columns], batch_size)
 res = met.evaluate_model(y_true=y, y_pred=y_pred, mode="macro", name=ext, store_y_pred=True)
 joblib.dump({
     "result": res,
     "history": hist.history
-}, "final/nn.final" + ext + ".pkl.xz")
-nn.save("final/nn.model.final" + ext + ".h5")
+}, "final/nn.val.final" + ext + ".pkl.xz")
+nn.save("final/nn.model.val.final" + ext + ".h5")
 
 

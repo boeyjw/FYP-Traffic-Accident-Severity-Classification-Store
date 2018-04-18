@@ -16,9 +16,10 @@ from scipy import interp
 
 RANDOM_STATE = 123456789
 N_JOBS=cpu_count() - 1 # Leave 1 thread for system use (extremely important during thrashing)
-is_rf = True # SET THIS TO FALSE IF NN
-ext = ".cas.v2"
+is_rf = False # SET THIS TO FALSE IF NN
+ext = ".nocas.v2"
 fn = "roc_auc_score-all.oh.tlsmote" + ext + ".pkl.xz"
+plt_title = 'Artificial Neural Network ROC Curve for No Casualty Features'
 
 print("Init")
 # Import training dataset
@@ -43,7 +44,7 @@ n_classes = y_test.shape[1]
 
 print("Predict Proba")
 # Learn to predict each class against the other
-classifier = joblib.load("final/rf.final" + ext + ".pkl.xz")["model"] if is_rf else load_model("final/nn.final.model" + ext + ".hs")
+classifier = joblib.load("final/rf.final" + ext + ".pkl.xz")["model"] if is_rf else load_model("final/nn.model.val.final" + ext + ".h5")
 y_score = classifier.predict_proba(x)
 
 print("Compute ROC")
@@ -104,6 +105,6 @@ plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('Random Forest ROC Curve with All Features')
+plt.title(plt_title)
 plt.legend(loc="lower right")
 plt.show()
