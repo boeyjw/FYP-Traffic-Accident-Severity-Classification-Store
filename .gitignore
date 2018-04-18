@@ -10,3 +10,4 @@ tap/__pycache__/**
 .Rhistory
 *.pkl.z
 grid_search*
+final/rf.final*
