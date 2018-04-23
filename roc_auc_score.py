@@ -16,14 +16,13 @@ from scipy import interp
 
 RANDOM_STATE = 123456789
 N_JOBS=cpu_count() - 1 # Leave 1 thread for system use (extremely important during thrashing)
-is_rf = False # SET THIS TO FALSE IF NN
+is_rf = True # SET THIS TO FALSE IF NN
 ext = ".nocas.v2"
-fn = "roc_auc_score-all.oh.tlsmote" + ext + ".pkl.xz"
-plt_title = 'Artificial Neural Network ROC Curve for No Casualty Features'
+fn = "roc_auc_score-all.oh.tlsmote" + ext + (".rf" if is_rf else ".nn") + ".pkl.xz"
+plt_title = 'Random Forest ROC Curve for No Casualty Features'
 
 print("Init")
 # Import training dataset
-# X, y = joblib.load("stratified_X_train.pkl.z"), joblib.load("stratified_Y_train.pkl.z")
 sample = joblib.load("train/stratified_XY_train.oh.tlsmote" + ext + ".pkl.xz")
 cattap = joblib.load("test/stratified_traintest.oh.pkl.xz")
 x, y = cattap["x"][sample["X2"].columns].copy(), cattap["y"].copy()
