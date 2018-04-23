@@ -18,12 +18,11 @@ RANDOM_STATE = 123456789
 N_JOBS=cpu_count() - 1 # Leave 1 thread for system use (extremely important during thrashing)
 is_rf = True # SET THIS TO FALSE IF NN
 ext = ".nocas.v2"
-fn = "roc_auc_score-all.oh.tlsmote" + ext + ".pkl.xz"
+fn = "roc_auc_score-all.oh.tlsmote" + ext + (".rf" if is_rf else ".nn") + ".pkl.xz"
 plt_title = 'Random Forest ROC Curve for No Casualty Features'
 
 print("Init")
 # Import training dataset
-# X, y = joblib.load("stratified_X_train.pkl.z"), joblib.load("stratified_Y_train.pkl.z")
 sample = joblib.load("train/stratified_XY_train.oh.tlsmote" + ext + ".pkl.xz")
 cattap = joblib.load("test/stratified_traintest.oh.pkl.xz")
 x, y = cattap["x"][sample["X2"].columns].copy(), cattap["y"].copy()
@@ -85,19 +84,19 @@ print("Plot: " + ext)
 plt.figure()
 lw = 2
 plt.plot(fpr["micro"], tpr["micro"],
-        label='micro-average ROC curve (AUC = {0:0.2f})'
+        label='micro-average ROC curve (area = {0:0.2f})'
             ''.format(roc_auc["micro"]),
         color='deeppink', linestyle=':', linewidth=4)
 
 plt.plot(fpr["macro"], tpr["macro"],
-        label='macro-average ROC curve (AUC = {0:0.2f})'
+        label='macro-average ROC curve (area = {0:0.2f})'
             ''.format(roc_auc["macro"]),
         color='navy', linestyle=':', linewidth=4)
 
 colors = cycle(['aqua', 'darkorange', 'cornflowerblue'])
 for i, color in zip(range(n_classes), colors):
     plt.plot(fpr[i], tpr[i], color=color, lw=lw,
-            label='ROC curve of class {0} (AUC = {1:0.2f})'
+            label='ROC curve of class {0} (area = {1:0.2f})'
             ''.format(i + 1, roc_auc[i]))
 
 plt.plot([0, 1], [0, 1], 'k--', lw=lw)
