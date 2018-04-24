@@ -16,10 +16,10 @@ from scipy import interp
 
 RANDOM_STATE = 123456789
 N_JOBS=cpu_count() - 1 # Leave 1 thread for system use (extremely important during thrashing)
-is_rf = True # SET THIS TO FALSE IF NN
-ext = ".nocas.v2"
+is_rf = False # SET THIS TO FALSE IF NN
+ext = ".cas.v2"
 fn = "roc_auc_score-all.oh.tlsmote" + ext + (".rf" if is_rf else ".nn") + ".pkl.xz"
-plt_title = 'Random Forest ROC Curve for No Casualty Features'
+plt_title = 'Artificial Neural Network ROC Curve for Casualty Inclusive Features'
 
 print("Init")
 # Import training dataset
